@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Weekly Report{% endblock %}
+{% block header_title %}Weekly Solana Sentiment Report{% endblock %}
+{% block content %}
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div class="bg-green-600 text-white p-4 rounded-lg mb-6 flex items-center">
+            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+<div class="bg-gray-850 p-8 rounded-lg shadow-xl border border-gray-700 hover:shadow-2xl transition-all duration-300">
+    <form method="POST" class="mb-6 space-y-6">
+        <div>
+            <label for="mode" class="block text-sm font-medium text-gray-300">Mode</label>
+            <select id="mode" name="mode" class="mt-2 block w-full p-3 bg-gray-700 border border-gray-600 rounded-md text-white ring-1 ring-gray-600 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-all duration-200">
+                <option value="simulated">Simulated</option>
+                <option value="live">Live (X API)</option>
+            </select>
+        </div>
+        <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white p-3 rounded-md hover:bg-indigo-800 hover:shadow-lg transition-all duration-300">Generate Report</button>
+    </form>
+    {% if report_data %}
+        <h2 class="text-xl font-semibold mb-6 text-white">Top 10 Solana Coins by Sentiment</h2>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-gray-300">
+                <thead class="bg-indigo-900 text-white uppercase">
+                    <tr>
+                        <th class="py-4 px-6">Rank</th>
+                        <th class="py-4 px-6">Coin</th>
+                        <th class="py-4 px-6">Sentiment Score</th>
+                        <th class="py-4 px-6">Total Posts</th>
+                        <th class="py-4 px-6">24h Correlation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in report_data %}
+                        <tr class="border-t border-gray-700 hover:bg-gray-700/50 transition-all duration-200">
+                            <td class="py-4 px-6">{{ loop.index }}</td>
+                            <td class="py-4 px-6">{{ data.coin }}</td>
+                            <td class="py-4 px-6">{{ data.sentiment_score|round(1) }}</td>
+                            <td class="py-4 px-6">{{ data.total_posts }}</td>
+                            <td class="py-4 px-6">{{ data.correlation_insight }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="{{ url_for('download_pdf') }}" class="mt-6 inline-block bg-gradient-to-r from-indigo-600 to-indigo-700 text-white p-3 rounded-md hover:bg-indigo-800 hover:shadow-lg transition-all duration-300">Download PDF Report</a>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block title %}Analysis Results{% endblock %}
+{% block header_title %}Analysis Results{% endblock %}
+{% block content %}
+{% for result in results %}
+    <div class="bg-gray-850 p-8 rounded-lg shadow-xl border border-gray-700 hover:shadow-2xl transition-all duration-300 mb-8">
+        <h2 class="text-2xl font-semibold mb-6 text-white">{{ result.topic }} ({{ result.mode }})</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <div class="max-w-full flex flex-col flex-1">
+                <h3 class="text-2xl font-bold mb-4">Sentiment Bar Chart</h3>
+                <div class="chart-container flex-grow" id="bar-{{ loop.index }}"></div>
+            </div>
+            <div class="max-w-full flex flex-col flex-1">
+                <h3 class="text-2xl font-bold mb-4">Sentiment Pie Chart</h3>
+                <div class="chart-container flex-grow" id="pie-{{ loop.index }}"></div>
+            </div>
+            <div class="col-span-full max-w-full flex flex-col flex-1">
+                <h3 class="text-2xl font-bold mb-4">Sentiment Trend</h3>
+                <div class="chart-container flex-grow" id="trend-{{ loop.index }}"></div>
+            </div>
+            <div class="max-w-full flex flex-col flex-1">
+                <h3 class="text-2xl font-bold mb-4">Sentiment Histogram</h3>
+                <div class="chart-container flex-grow" id="hist-{{ loop.index }}"></div>
+            </div>
+            <div class="col-span-full max-w-full flex flex-col flex-1">
+                <h3 class="text-2xl font-bold mb-4">Sentiment Heatmap</h3>
+                <div class="chart-container flex-grow" id="heatmap-{{ loop.index }}"></div>
+            </div>
+            {% if result.correlation_jsons %}
+                <div class="max-w-full flex flex-col flex-1">
+                    <h3 class="text-2xl font-bold mb-4">1h Sentiment vs Price</h3>
+                    <div class="chart-container flex-grow" id="correlation-1h-{{ loop.index }}"></div>
+                </div>
+                <div class="max-w-full flex flex-col flex-1">
+                    <h3 class="text-2xl font-bold mb-4">24h Sentiment vs Price</h3>
+                    <div class="chart-container flex-grow" id="correlation-24h-{{ loop.index }}"></div>
+                </div>
+                <div class="col-span-full max-w-full flex flex-col flex-1">
+                    <h3 class="text-2xl font-bold mb-4">7d Sentiment vs Price</h3>
+                    <div class="chart-container flex-grow" id="correlation-7d-{{ loop.index }}"></div>
+                </div>
+            {% endif %}
+        </div>
+        <img src="data:image/png;base64,{{ result.wordcloud_img }}" alt="Word Cloud" class="mt-6 mx-auto max-w-full h-auto rounded-md shadow-md">
+        <div class="mt-6">
+            <h3 class="text-lg font-semibold">Insights</h3>
+            <p><strong>Top Positive Words:</strong> {{ result.top_pos }}</p>
+            <p><strong>Top Negative Words:</strong> {{ result.top_neg }}</p>
+            <p><strong>Signals:</strong> {{ result.signals | join(', ') if result.signals else 'None' }}</p>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const baseLayout = {
+                responsive: true,
+                plot_bgcolor: '#2d3748',
+                paper_bgcolor: '#2d3748',
+                font: { color: '#e5e7eb', size: 14 },
+                xaxis: { gridcolor: '#374151', gridwidth: 1, zerolinecolor: '#374151', automargin: true },
+                yaxis: { gridcolor: '#374151', gridwidth: 1, zerolinecolor: '#374151', automargin: true },
+                showlegend: true,
+                legend: { font: { size: 12 } }
+            };
+
+            const container = document.querySelector('.chart-container');
+            if (container) {
+                const containerWidth = container.parentElement.offsetWidth;
+
+                try {
+                    // Bar Chart
+                    const barData = JSON.parse('{{ result.bar_json | safe }}'.replace(/'/g, '"'));
+                    console.log("Bar Data:", barData);
+                    Plotly.newPlot("bar-{{ loop.index }}", barData, {
+                        ...baseLayout,
+                        width: containerWidth,
+                        height: 450,
+                        yaxis: { range: [-1.5, 1.5], title: "Sentiment Score", autorange: true, automargin: true }
+                    }).then(() => {
+                        Plotly.relayout("bar-{{ loop.index }}", { 'yaxis.autorange': true });
+                    });
+
+                    // Pie Chart
+                    const pieData = JSON.parse('{{ result.pie_json | safe }}'.replace(/'/g, '"'));
+                    console.log("Pie Data:", pieData);
+                    Plotly.newPlot("pie-{{ loop.index }}", pieData, {
+                        ...baseLayout,
+                        width: containerWidth,
+                        height: 450,
+                        legend: { orientation: "h", y: -0.6, x: 0, xanchor: "left", font: { size: 12 } },
+                        automargin: true
+                    });
+
+                    // Trend Chart
+                    const trendData = JSON.parse('{{ result.trend_json | safe }}'.replace(/'/g, '"'));
+                    console.log("Trend Data:", trendData);
+                    Plotly.newPlot("trend-{{ loop.index }}", trendData, {
+                        ...baseLayout,
+                        width: containerWidth,
+                        height: 500,
+                        xaxis: { type: 'date', tickangle: -60, tickfont: { size: 12 }, automargin: true, tickmode: "auto", nticks: 8 },
+                        yaxis: { title: "Avg Sentiment Score", autorange: true }
+                    });
+
+                    // Histogram
+                    const histData = JSON.parse('{{ result.hist_json | safe }}'.replace(/'/g, '"'));
+                    console.log("Histogram Data:", histData);
+                    Plotly.newPlot("hist-{{ loop.index }}", histData, {
+                        ...baseLayout,
+                        width: containerWidth,
+                        height: 450,
+                        bargap: 0.1,
+                        automargin: true
+                    }).then(() => {
+                        Plotly.relayout("hist-{{ loop.index }}", { 'yaxis.autorange': true });
+                    });
+
+                    // Heatmap
+                    const heatmapData = JSON.parse('{{ result.heatmap_json | safe }}'.replace(/'/g, '"'));
+                    console.log("Heatmap Data:", heatmapData);
+                    Plotly.newPlot("heatmap-{{ loop.index }}", heatmapData, {
+                        ...baseLayout,
+                        width: containerWidth,
+                        height: 500,
+                        colorbar: { title: "Density", automargin: true }
+                    });
+
+                    {% if result.correlation_jsons %}
+                        // 1h Correlation
+                        const corr1hData = JSON.parse('{{ result.correlation_jsons['1h'] | safe }}'.replace(/'/g, '"'));
+                        console.log("1h Correlation Data:", corr1hData);
+                        Plotly.newPlot("correlation-1h-{{ loop.index }}", corr1hData, {
+                            ...baseLayout,
+                            width: containerWidth,
+                            height: 450,
+                            yaxis2: { title: "Price (USD)", overlaying: "y", side: "right", automargin: true }
+                        });
+                        // 24h Correlation
+                        const corr24hData = JSON.parse('{{ result.correlation_jsons['24h'] | safe }}'.replace(/'/g, '"'));
+                        console.log("24h Correlation Data:", corr24hData);
+                        Plotly.newPlot("correlation-24h-{{ loop.index }}", corr24hData, {
+                            ...baseLayout,
+                            width: containerWidth,
+                            height: 450,
+                            yaxis2: { title: "Price (USD)", overlaying: "y", side: "right", automargin: true }
+                        });
+                        // 7d Correlation
+                        const corr7dData = JSON.parse('{{ result.correlation_jsons['7d'] | safe }}'.replace(/'/g, '"'));
+                        console.log("7d Correlation Data:", corr7dData);
+                        Plotly.newPlot("correlation-7d-{{ loop.index }}", corr7dData, {
+                            ...baseLayout,
+                            width: containerWidth,
+                            height: 500,
+                            yaxis2: { title: "Price (USD)", overlaying: "y", side: "right", automargin: true }
+                        });
+                    {% endif %}
+                } catch (e) {
+                    console.error("Plotly rendering error:", e, "Data:", {
+                        bar: barData, pie: pieData, trend: trendData, hist: histData, heatmap: heatmapData,
+                        corr1h: corr1hData, corr24h: corr24hData, corr7d: corr7dData
+                    });
+                }
+            }
+        });
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', 'Roboto', sans-serif !important;
+            background-color: #1a202c !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        header {
+            background: none !important;
+        }
+        .container, .container.crypto-dashboard {
+            padding: 0 !important;
+            max-width: none !important;
+            background: none !important;
+        }
+        .chart-container {
+            background-color: #2d3748 !important;
+            padding: 0 !important;
+            border-radius: 0.5rem;
+            margin: 0 0 1.5rem 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            border: 2px solid #374151;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease-in-out;
+            overflow: hidden;
+        }
+        .chart-container:hover {
+            transform: scale(1.03);
+        }
+        /* Neutralize all custom interfering styles */
+        .spinner, .download-btn, .wordcloud-img, .color-pickers, .feedback-form, .collapsible, .insights-table, .signals-table {
+            display: none !important;
+        }
+    </style>
+{% endfor %}
+{% endblock %}

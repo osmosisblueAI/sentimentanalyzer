@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #1a202c;
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <header class="bg-gray-900 p-4 shadow-md">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white">Weekly Solana Sentiment Report</h1>
+            <nav>
+                <a href="{{ url_for('index') }}" class="text-gray-300 hover:text-white mr-4">Analyzer</a>
+                <a href="{{ url_for('logout') }}" class="text-gray-300 hover:text-white">Logout</a>
+            </nav>
+        </div>
+    </header>
+    <main class="flex-grow max-w-7xl mx-auto p-6">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="bg-green-500 text-white p-4 rounded mb-4">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h2 class="text-xl font-semibold mb-4">Top 10 Solana Coins by Sentiment</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-gray-300">
+                    <thead class="bg-gray-700">
+                        <tr>
+                            <th>Rank</th>
+                            <th>Coin</th>
+                            <th>Sentiment Score (0-100)</th>
+                            <th>Total Posts</th>
+                            <th>24h Price Correlation Insight</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in report_data %}
+                            <tr class="border-b border-gray-700 hover:bg-gray-700">
+                                <td>{{ loop.index }}</td>
+                                <td>{{ data.coin }}</td>
+                                <td>{{ data.sentiment_score|round(1) }}</td>
+                                <td>{{ data.total_posts }}</td>
+                                <td>{{ data.correlation_insight }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <a href="{{ url_for('download_pdf') }}" class="mt-4 inline-block bg-indigo-600 text-white p-2 rounded-md hover:bg-indigo-700">Download PDF Report</a>
+        </div>
+    </main>
+</body>
+</html>

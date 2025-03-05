@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="bg-gray-850 p-8 rounded-lg shadow-xl border border-gray-700 hover:shadow-2xl transition-all duration-300">
+    <form method="POST" class="space-y-6" id="analysis-form">
+        {{ form.hidden_tag() }}
+        <div>
+            <label for="topics" class="block text-sm font-medium text-gray-300">Topics (comma-separated)</label>
+            {{ form.topics(class="mt-2 block w-full p-3 bg-gray-700 border border-gray-600 rounded-md text-white ring-1 ring-gray-600 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-all duration-200", list="crypto-topics", placeholder="Enter topics") }}
+            <datalist id="crypto-topics">
+                {% for coin in coins %}
+                    <option value="{{ coin }}">{{ coin }}</option>
+                {% endfor %}
+            </datalist>
+            {% if form.topics.errors %}
+                <p class="text-red-400 text-sm mt-1">{{ form.topics.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="mode" class="block text-sm font-medium text-gray-300">Mode</label>
+            {{ form.mode(class="mt-2 block w-full p-3 bg-gray-700 border border-gray-600 rounded-md text-white ring-1 ring-gray-600 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-all duration-200") }}
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-300">Chart Colors</label>
+            <div class="mt-2 flex space-x-3">
+                {{ form.very_positive(type="color", class="w-14 h-14 rounded-md ring-1 ring-gray-600") }}
+                {{ form.positive(type="color", class="w-14 h-14 rounded-md ring-1 ring-gray-600") }}
+                {{ form.neutral(type="color", class="w-14 h-14 rounded-md ring-1 ring-gray-600") }}
+                {{ form.negative(type="color", class="w-14 h-14 rounded-md ring-1 ring-gray-600") }}
+                {{ form.very_negative(type="color", class="w-14 h-14 rounded-md ring-1 ring-gray-600") }}
+            </div>
+        </div>
+        <div class="flex space-x-3">
+            {{ form.submit(class="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white p-3 rounded-md hover:bg-indigo-800 hover:shadow-lg transition-all duration-300", id="submit-btn") }}
+            <button type="button" id="reset-colors" class="w-full bg-gray-600 text-white p-3 rounded-md hover:bg-gray-700 hover:shadow-lg transition-all duration-300">Reset Colors</button>
+        </div>
+    </form>
+    <div id="status" class="hidden mt-6 text-center text-gray-300">
+        <div class="spinner inline-block"></div>
+        <p>Analyzing sentiment... Please wait.</p>
+    </div>
+</div>
+<script>
+    document.getElementById('analysis-form').addEventListener('submit', function() {
+        document.getElementById('submit-btn').disabled = true;
+        document.getElementById('status').classList.remove('hidden');
+    });
+    document.getElementById('reset-colors').addEventListener('click', () => {
+        document.getElementById('very_positive').value = '#2ecc71';
+        document.getElementById('positive').value = '#66BB6A';
+        document.getElementById('neutral').value = '#FFCA28';
+        document.getElementById('negative').value = '#EF5350';
+        document.getElementById('very_negative').value = '#e74c3c';
+    });
+</script>
+{% endblock %}

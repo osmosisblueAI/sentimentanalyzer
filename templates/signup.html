@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Sign Up{% endblock %}
+{% block header_title %}Sign Up{% endblock %}
+{% block content %}
+<div class="bg-gray-850 p-8 rounded-lg shadow-xl border border-gray-700 hover:shadow-2xl transition-all duration-300 max-w-md mx-auto">
+    <form method="POST" class="space-y-6" id="signup-form">
+        {{ form.hidden_tag() }}
+        <div>
+            <label for="username" class="block text-sm font-medium text-gray-300">Username</label>
+            {{ form.username(class="mt-2 block w-full p-3 bg-gray-700 border border-gray-600 rounded-md text-white ring-1 ring-gray-600 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-all duration-200", placeholder="Enter username") }}
+            {% if form.username.errors %}
+                <p class="text-red-400 text-sm mt-1">{{ form.username.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div class="relative">
+            <label for="password" class="block text-sm font-medium text-gray-300">Password</label>
+            {{ form.password(class="mt-2 block w-full p-3 bg-gray-700 border border-gray-600 rounded-md text-white ring-1 ring-gray-600 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-all duration-200", placeholder="Enter password") }}
+            <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 flex items-center pr-3 mt-6 text-gray-400 hover:text-gray-300">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm-3 9c-5.523 0-10-4.477-10-10s4.477-10 10-10 10 4.477 10 10-4.477 10-10 10zm0-2c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z"/></svg>
+            </button>
+            {% if form.password.errors %}
+                <p class="text-red-400 text-sm mt-1">{{ form.password.errors[0] }}</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="email" class="block text-sm font-medium text-gray-300">Email</label>
+            {{ form.email(class="mt-2 block w-full p-3 bg-gray-700 border border-gray-600 rounded-md text-white ring-1 ring-gray-600 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-all duration-200", placeholder="Enter email") }}
+            {% if form.email.errors %}
+                <p class="text-red-400 text-sm mt-1">{{ form.email.errors[0] }}</p>
+            {% endif %}
+        </div>
+        {{ form.submit(class="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white p-3 rounded-md hover:bg-indigo-800 hover:shadow-lg transition-all duration-300") }}
+    </form>
+    <p class="mt-2 text-center text-gray-400">Already have an account? <a href="{{ url_for('login') }}" class="text-indigo-400 hover:text-indigo-500 hover:underline transition-all duration-200">Log in</a></p>
+</div>
+<script>
+    const togglePassword = document.getElementById('toggle-password');
+    const password = document.getElementById('password');
+    togglePassword.addEventListener('click', () => {
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        togglePassword.querySelector('svg').classList.toggle('text-gray-300');
+    });
+</script>
+{% endblock %}
